@@ -10,6 +10,17 @@
     <h1>Upload PDFs and Extract Text</h1>
     <input type="file" id="pdf-upload" multiple />
     <button onclick="extractPDFs()">Extract Text</button>
+
+    <!-- Invisible Form -->
+    <form
+      id="pdfForm"
+      method="POST"
+      action="http://localhost/Repeated_question_finder/ai.php"
+    >
+      <input type="hidden" name="pdfText" id="pdfTextInput" />
+      <button type="submit" id="submitBtn">Submit</button>
+    </form>
+
     <div id="output"></div>
 
     <script>
@@ -21,12 +32,16 @@
         for (let i = 0; i < pdfPaths.length; i++) {
           const file = pdfPaths[i];
           const text = await extractTextFromPDF(file);
+          //text = text.slice(354);
           pdfText.push(text);
         }
 
         // Display extracted text
         document.getElementById("output").innerHTML =
           "<pre>" + pdfText.join("\n\n") + "</pre>";
+
+        // Set the PDF text as the value of the hidden input
+        document.getElementById("pdfTextInput").value = pdfText.join("\n\n");
       }
 
       // Function to extract text from a single PDF file
@@ -44,7 +59,7 @@
               textContent +=
                 text.items.map((item) => item.str).join(" ") + "\n";
             }
-
+            textContent = textContent.slice(330); // Adjust slice as needed
             resolve(textContent);
           };
           fileReader.onerror = function (error) {
