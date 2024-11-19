@@ -3,87 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PDF Upload Page</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      .container {
-        max-width: 600px;
-        margin: auto;
-        text-align: center;
-      }
-      .upload-section {
-        margin: 20px 0;
-      }
-      .upload-button {
-        margin: 10px 0;
-      }
-      .upload-button input[type="file"] {
-        display: none;
-      }
-      .upload-button label {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #4caf50;
-        color: white;
-        cursor: pointer;
-        border-radius: 5px;
-      }
-      .upload-button label:hover {
-        background-color: #45a049;
-      }
-    </style>
+    <title>Extract PDF Text in Browser</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
   </head>
   <body>
-    <div class="container">
-      <h1>Upload Your PDFs</h1>
-      <form method="POST" action="extract.php" id="upload-form">
-        <div class="upload-section" id="upload-container">
-          <!-- Initial upload button and input -->
-          <div class="upload-button">
-            <label for="pdf1">Upload PDF 1</label>
-            <input type="file" id="pdf1" name="pdf1" accept=".pdf" required />
-          </div>
-        </div>
-        <button type="button" id="add-upload">Add Another PDF</button>
-        <button type="submit" id="submit-button">Submit</button>
-      </form>
-    </div>
+    <h1>Upload PDFs and Extract Text</h1>
+    <input type="file" id="pdf-upload" multiple />
+    <button onclick="extractPDFs()">Extract Text</button>
+    <div id="output"></div>
 
     <script>
-      let pdfCount = 1; // Keeps track of the number of PDF inputs
+      // Function to extract text from PDFs
+      async function extractPDFs() {
+        const pdfPaths = document.getElementById("pdf-upload").files;
+        const pdfText = [];
 
-      document
-        .getElementById("add-upload")
-        .addEventListener("click", function () {
-          pdfCount++; // Increment the counter for each new input
+        for (let i = 0; i < pdfPaths.length; i++) {
+          const file = pdfPaths[i];
+          const text = await extractTextFromPDF(file);
+          pdfText.push(text);
+        }
 
-          // Create a new div container for the upload input
-          const newUploadDiv = document.createElement("div");
-          newUploadDiv.className = "upload-button";
+        // Display extracted text
+        document.getElementById("output").innerHTML =
+          "<pre>" + pdfText.join("\n\n") + "</pre>";
+      }
 
-          // Create a new label
-          const newLabel = document.createElement("label");
-          newLabel.setAttribute("for", `pdf${pdfCount}`);
-          newLabel.textContent = `Upload PDF ${pdfCount}`;
+      // Function to extract text from a single PDF file
+      async function extractTextFromPDF(file) {
+        const fileReader = new FileReader();
+        return new Promise((resolve, reject) => {
+          fileReader.onload = async function () {
+            const loadingTask = pdfjsLib.getDocument(fileReader.result);
+            const pdf = await loadingTask.promise;
+            let textContent = "";
 
-          // Create a new input element
-          const newInput = document.createElement("input");
-          newInput.type = "file";
-          newInput.id = `pdf${pdfCount}`;
-          newInput.name = `pdf${pdfCount}`;
-          newInput.accept = ".pdf";
-          newInput.required = true;
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+              const page = await pdf.getPage(pageNum);
+              const text = await page.getTextContent();
+              textContent +=
+                text.items.map((item) => item.str).join(" ") + "\n";
+            }
 
-          // Append the label and input to the new div
-          newUploadDiv.appendChild(newLabel);
-          newUploadDiv.appendChild(newInput);
-
-          // Append the new div to the upload container
-          document.getElementById("upload-container").appendChild(newUploadDiv);
+            resolve(textContent);
+          };
+          fileReader.onerror = function (error) {
+            reject(error);
+          };
+          fileReader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
         });
+      }
     </script>
   </body>
 </html>
