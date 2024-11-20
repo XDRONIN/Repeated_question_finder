@@ -144,7 +144,7 @@ async function run() {
   
  
   const prompt = `${pdfTextArray} contains some questions from different question pappers. Go through the the questions and tell me which questions appear repeatedly 
-  with the repeated number.You can consider similar questions from the same topic as Repeated `;
+  with the repeated number.Exact repeated questions has the highest priority.You can consider similar repeated questions from the same topic (lower priority)`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
