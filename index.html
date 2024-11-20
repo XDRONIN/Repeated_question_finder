@@ -6,9 +6,58 @@
     <title>Extract PDF Text in Browser</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
   </head>
+  <style>
+    .file-upload-container {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .file-upload {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+    .file-upload.dragover {
+      background-color: #f0f0f0;
+      border-color: #007bff;
+    }
+    .file-input {
+      display: none;
+    }
+    .file-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .upload-icon {
+      font-size: 2rem;
+    }
+  </style>
   <body>
     <h1>Upload PDFs and Extract Text</h1>
-    <input type="file" id="pdf-upload" multiple />
+    <!-- <input type="file" id="pdf-upload" multiple /> -->
+
+    <div class="file-upload-container">
+      <div class="file-upload" id="file-upload-area">
+        <input
+          multiple
+          class="file-input"
+          id="pdf-upload"
+          type="file"
+          accept=".pdf"
+        />
+        <label class="file-label" for="pdf-upload">
+          <i class="upload-icon">📁</i>
+          <p>Drag &amp; Drop your files here or click to upload</p>
+        </label>
+      </div>
+      <div id="file-list"></div>
+    </div>
+
     <button onclick="extractPDFs()">Extract Text</button>
 
     <!-- Invisible Form -->
@@ -66,6 +115,56 @@
             reject(error);
           };
           fileReader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
+        });
+      }
+      const fileUploadArea = document.getElementById("file-upload-area");
+      const fileInput = document.getElementById("pdf-upload");
+      const fileList = document.getElementById("file-list");
+
+      // Drag and Drop Events
+      fileUploadArea.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileUploadArea.classList.add("dragover");
+      });
+
+      fileUploadArea.addEventListener("dragleave", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileUploadArea.classList.remove("dragover");
+      });
+
+      fileUploadArea.addEventListener("drop", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        fileUploadArea.classList.remove("dragover");
+
+        const files = event.dataTransfer.files;
+        handleFiles(files);
+
+        // Manually set the files to the input field
+        const dataTransfer = new DataTransfer();
+        Array.from(files).forEach((file) => {
+          dataTransfer.items.add(file);
+        });
+        fileInput.files = dataTransfer.files;
+      });
+
+      // File Input Change Event
+      fileInput.addEventListener("change", () => {
+        const files = fileInput.files;
+        handleFiles(files);
+      });
+
+      // Handle Files
+      function handleFiles(files) {
+        fileList.innerHTML = ""; // Clear the previous list
+        Array.from(files).forEach((file) => {
+          const listItem = document.createElement("p");
+          listItem.textContent = `Uploaded: ${file.name} (${(
+            file.size / 1024
+          ).toFixed(2)} KB)`;
+          fileList.appendChild(listItem);
         });
       }
     </script>
