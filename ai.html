@@ -1,17 +1,3 @@
-<?php
-// Check if the form is submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pdfText'])) {
-    // Retrieve the 'pdfText' data from the form
-    $pdfText = $_POST['pdfText'];
-
-    // Convert the PDF text data into a PHP array by splitting it at newlines (or however you want to structure it)
-    // For this example, we'll split the text by double newlines for separate pages/sections
-    $pdfTextArray = explode("\n\n", $pdfText);
-
-    // Encode the PHP array into a JSON object
-    $jsonEncodedText = json_encode($pdfTextArray);
-}
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -109,6 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pdfText'])) {
     </script>
 
     <script>
+      function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search); // Parse the URL query string
+      return urlParams.get(param); // Get the value of the specified parameter
+    }
+
+    // Call the function to retrieve the 'pdfText' parameter
+    const pdfTextArray = getQueryParam('pdfText');
       function showLoading() {
   spinner.style.display = "flex";
 }
@@ -117,8 +110,8 @@ function hideLoading() {
 }
 
        
-        // Fetch the PHP-encoded JSON array and parse it into a JavaScript array
-        const pdfTextArray = <?php echo $jsonEncodedText; ?>;
+        
+        
 
         // Display the content in the output div
         const output=document.getElementById("output");

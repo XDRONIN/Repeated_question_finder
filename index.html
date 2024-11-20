@@ -103,11 +103,7 @@
     </center>
 
     <!-- Invisible Form -->
-    <form
-      id="pdfForm"
-      method="POST"
-      action="ai.php"
-    >
+    <form id="pdfForm" onsubmit="handleSubmit(event)">
       <input type="hidden" name="pdfText" id="pdfTextInput" />
       <center>
         <button
@@ -217,6 +213,17 @@
           ).toFixed(2)} KB)`;
           fileList.appendChild(listItem);
         });
+      }
+      function handleSubmit(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Get the form data
+        const pdfText = document.getElementById("pdfTextInput").value;
+
+        // Redirect to ai.html with the data as query parameters
+        window.location.href = `/ai.html?pdfText=${encodeURIComponent(
+          pdfText
+        )}`;
       }
     </script>
   </body>
